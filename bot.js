@@ -169,8 +169,4 @@ async function anunciarNuevasNovelas() {
   console.log(`${color.fgGreen}🎉 Proceso de anuncios finalizado.${color.reset}`);
 }
 
-// Ejecuta al iniciar
-anunciarNuevasNovelas();
-
-// Ejecutar cada 5 minutos
-setInterval(anunciarNuevasNovelas, 5 * 60 * 1000);
+// El bot solo se ejecutará cuando se llame manualmente desde el frontend (no automático)

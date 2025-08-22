@@ -77,9 +77,35 @@
   <button id="subirBtn">Subir imagen</button>
   <img id="preview" src="#" alt="Vista previa de portada">
   <div id="feedback"></div>
+  <button id="ejecutarBot" style="margin-top:1.5rem;background:#36c;">Ejecutar bot de anuncios</button>
 </div>
 
 <script>
+cargarSiguiente();
+
+// Botón para ejecutar el bot manualmente
+const btnBot = document.getElementById('ejecutarBot');
+btnBot.addEventListener('click', async () => {
+  btnBot.disabled = true;
+  btnBot.textContent = 'Ejecutando...';
+  feedback.textContent = 'Ejecutando bot, espera...';
+  feedback.className = '';
+  try {
+    const res = await fetch('/ejecutar-bot', { method: 'POST' });
+    if (res.ok) {
+      feedback.textContent = '✅ Bot ejecutado correctamente.';
+      feedback.className = 'success';
+    } else {
+      feedback.textContent = '❌ Error al ejecutar el bot.';
+      feedback.className = 'error';
+    }
+  } catch {
+    feedback.textContent = '❌ Error al ejecutar el bot.';
+    feedback.className = 'error';
+  }
+  btnBot.disabled = false;
+  btnBot.textContent = 'Ejecutar bot de anuncios';
+});
 const titulo = document.getElementById('tituloNovela');
 const input = document.getElementById('imagenPortada');
 const preview = document.getElementById('preview');
