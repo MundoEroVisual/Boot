@@ -16,8 +16,6 @@
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "express-fileupload": "^1.5.2",
-    "snoowrap": "^1.23.0"
+    "snoowrap": "^1.15.2"
   }
 }
-
-
