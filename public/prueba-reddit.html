@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Subir Novelas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: linear-gradient(120deg, #232526, #414345);
+      color: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: rgba(30,30,30,0.95);
+      padding: 2rem 2.5rem;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px 0 rgba(31,38,135,0.37);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+    h2 {
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+    }
+    input[type="file"] {
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+    button {
+      background: #ff416c;
+      background: linear-gradient(to right, #ff4b2b, #ff416c);
+      color: #fff;
+      border: none;
+      padding: 0.7rem 2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-bottom: 1rem;
+    }
+    button:disabled {
+      background: #888;
+      cursor: not-allowed;
+    }
+    #preview {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-top: 1rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      display: none;
+    }
+    .success {
+      color: #7fff7f;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    .error {
+      color: #ff7f7f;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2 id="tituloNovela">Cargando...</h2>
+  <input type="file" id="imagenPortada" accept="image/*"><br>
+  <button id="subirBtn">Subir imagen</button>
+  <img id="preview" src="#" alt="Vista previa de portada">
+  <div id="feedback"></div>
+</div>
+
+<script>
+const titulo = document.getElementById('tituloNovela');
+const input = document.getElementById('imagenPortada');
+const preview = document.getElementById('preview');
+const btn = document.getElementById('subirBtn');
+const feedback = document.getElementById('feedback');
+
+let novelaActual = null;
+
+async function cargarSiguiente() {
+  feedback.textContent = '';
+  const res = await fetch('/siguiente-novela');
+  const data = await res.json();
+  if (!data) {
+    titulo.textContent = '¡No hay más novelas!';
+    btn.disabled = true;
+    input.disabled = true;
+    return;
+  }
+  novelaActual = data;
+  titulo.textContent = `Sube la portada para: ${novelaActual.titulo}`;
+}
+
+input.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) {
+    preview.style.display = 'none';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+});
+
+btn.addEventListener('click', async () => {
+  if (!input.files[0]) {
+    feedback.textContent = 'Selecciona una imagen.';
+    feedback.className = 'error';
+    return;
+  }
+  const formData = new FormData();
+  formData.append('imagen', input.files[0]);
+  formData.append('novelaId', novelaActual.id);
+  formData.append('titulo', novelaActual.titulo || '');
+  formData.append('desc', novelaActual.desc || '');
+  formData.append('peso', novelaActual.peso || '');
+  formData.append('estado', novelaActual.estado || '');
+
+  try {
+    await fetch('/subir-novela', { method: 'POST', body: formData });
+    input.value = '';
+    preview.style.display = 'none';
+    feedback.textContent = '¡Imagen subida y novela publicada!';
+    feedback.className = 'success';
+    setTimeout(() => { feedback.textContent = ''; }, 2000);
+    cargarSiguiente();
+  } catch {
+    feedback.textContent = 'Error al subir la imagen.';
+    feedback.className = 'error';
+  }
+});
+
+cargarSiguiente();
+</script>
+</body>
+</html>
