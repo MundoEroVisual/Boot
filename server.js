@@ -47,10 +47,6 @@ function ejecutarBot(nombre, comando) {
   return proceso;
 }
 
-// Ejecutar bots automáticamente
-ejecutarBot("Bot Discord", "node bot.js");
-ejecutarBot("Bot Telegram", "node bot-telegram-novelas.js");
-
 // ---------------------------
 // Configuración GitHub
 // ---------------------------
@@ -160,14 +156,13 @@ app.get("/", (req, res) => {
 });
 
 // ---------------------------
-// Iniciar servidor Web Service en Render
+// Iniciar servidor y luego ejecutar bots
 // ---------------------------
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Servidor escuchando en http://0.0.0.0:${PORT}`);
-});
+app.listen(PORT, () => {
+  console.log(`Servidor escuchando en http://localhost:${PORT}`);
 
-// ---------------------------
-// Mantener el proceso activo para que los bots sigan ejecutándose
-// ---------------------------
-process.stdin.resume();
+  // Ejecutar bots después de iniciar servidor
+  ejecutarBot("Bot Discord", "node bot.js");
+  ejecutarBot("Bot Telegram", "node bot-telegram-novelas.js");
+});
