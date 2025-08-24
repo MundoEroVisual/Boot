@@ -784,9 +784,6 @@ client.once("ready", async () => {
         new SlashCommandBuilder()
           .setName("recargarvideos")
           .setDescription("Recargar videos anunciados desde GitHub"),
-        new SlashCommandBuilder()
-          .setName("resetearvideos")
-          .setDescription("Resetear videos anunciados (vaciar lista)")
     ];
 
     console.log(`📝 Registrando ${commands.length} comandos...`);
