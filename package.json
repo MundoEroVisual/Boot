@@ -1,7 +1,7 @@
 {
   "name": "bot",
-  "version": "1.0.0",
   "type": "module",
+  "version": "1.0.0",
   "main": "bot.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -17,6 +17,7 @@
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "express-fileupload": "^1.5.2",
+    "node-fetch": "^2.7.0",
     "node-telegram-bot-api": "^0.66.0",
     "rss-parser": "^3.13.0"
   }
