@@ -1,7 +1,7 @@
 {
   "users": {
     "1030923635646529637": {
-      "gems": 999845,
+      "gems": 999795,
       "points": 0,
       "level": 1,
       "inventory": [
@@ -10,6 +10,7 @@
         "vip1d",
         "fondo",
         "color",
+        "vip1d",
         "vip1d"
       ]
     }
