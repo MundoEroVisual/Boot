@@ -1,18 +1,19 @@
-import dotenv from "dotenv";
-dotenv.config();
+// Cargar variables de entorno
+require('dotenv').config();
 
-import { exec } from "node:child_process";
-import express from "express";
-import fileUpload from "express-fileupload";
-import fs from "fs";
-import path from "path";
-import { Octokit } from "@octokit/rest";
-------
+const { exec } = require('child_process');
+const express = require('express');
+const fileUpload = require('express-fileupload');
+const fs = require('fs');
+const path = require('path');
+const { Octokit } = require('@octokit/rest');
+
+// ---------------------------
 // Servidor Express
 // ---------------------------
 const app = express();
 app.use(fileUpload());
-app.use(express.static("public"));
+app.use(express.static('public'));
 
 // ---------------------------
 // Función para ejecutar bots con logs completos
@@ -22,19 +23,19 @@ function ejecutarBot(nombre, comando) {
 
   const proceso = exec(comando);
 
-  proceso.stdout.on("data", (data) => {
+  proceso.stdout.on('data', (data) => {
     process.stdout.write(`[${nombre} STDOUT] ${data}`);
   });
 
-  proceso.stderr.on("data", (data) => {
+  proceso.stderr.on('data', (data) => {
     process.stderr.write(`[${nombre} STDERR] ${data}`);
   });
 
-  proceso.on("error", (err) => {
+  proceso.on('error', (err) => {
     console.error(`[${nombre} ERROR]`, err);
   });
 
-  proceso.on("close", (code) => {
+  proceso.on('close', (code) => {
     console.log(`[${nombre}] proceso cerrado con código: ${code}`);
     if (code === 0) {
       console.log(`✅ ${nombre} finalizó correctamente.`);
@@ -50,11 +51,11 @@ function ejecutarBot(nombre, comando) {
 // Configuración GitHub
 // ---------------------------
 const REQUIRED_ENV_VARS = [
-  "GITHUB_TOKEN",
-  "GITHUB_OWNER",
-  "GITHUB_REPO",
-  "NOVELAS_JSON_GITHUB_PATH",
-  "NOVELAS_ANUNCIADAS_GITHUB_PATH",
+  'GITHUB_TOKEN',
+  'GITHUB_OWNER',
+  'GITHUB_REPO',
+  'NOVELAS_JSON_GITHUB_PATH',
+  'NOVELAS_ANUNCIADAS_GITHUB_PATH',
 ];
 
 for (const v of REQUIRED_ENV_VARS) {
@@ -67,7 +68,7 @@ for (const v of REQUIRED_ENV_VARS) {
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 const GITHUB_OWNER = process.env.GITHUB_OWNER;
 const GITHUB_REPO = process.env.GITHUB_REPO;
-const GITHUB_BRANCH = process.env.GITHUB_BRANCH || "main";
+const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 const NOVELAS_JSON_GITHUB_PATH = process.env.NOVELAS_JSON_GITHUB_PATH;
 const NOVELAS_ANUNCIADAS_GITHUB_PATH = process.env.NOVELAS_ANUNCIADAS_GITHUB_PATH;
 
@@ -85,7 +86,7 @@ async function cargarNovelasAnunciadas() {
       path: NOVELAS_ANUNCIADAS_GITHUB_PATH,
       ref: GITHUB_BRANCH,
     });
-    const content = Buffer.from(data.content, "base64").toString("utf-8");
+    const content = Buffer.from(data.content, 'base64').toString('utf-8');
     const arr = JSON.parse(content);
     return new Set(Array.isArray(arr) ? arr : []);
   } catch (e) {
@@ -107,7 +108,7 @@ async function cargarNovelasDesdeGitHub() {
       ref: GITHUB_BRANCH,
     });
 
-    const content = Buffer.from(data.content, "base64").toString("utf-8");
+    const content = Buffer.from(data.content, 'base64').toString('utf-8');
     let arr = JSON.parse(content);
     if (!Array.isArray(arr)) arr = [];
 
@@ -135,7 +136,7 @@ async function cargarNovelasDesdeGitHub() {
 // ---------------------------
 // Rutas del servidor
 // ---------------------------
-app.get("/siguiente-novela", async (req, res) => {
+app.get('/siguiente-novela', async (req, res) => {
   try {
     if (!novelas.length) {
       novelas = await cargarNovelasDesdeGitHub();
@@ -145,13 +146,12 @@ app.get("/siguiente-novela", async (req, res) => {
     res.json(novelas[indiceActual]);
   } catch (e) {
     console.error(`[ERROR] Al obtener la siguiente novela:`, e.message || e);
-    res.status(500).json({ error: "Error al obtener la novela" });
+    res.status(500).json({ error: 'Error al obtener la novela' });
   }
 });
 
-// Ruta simple para prueba
-app.get("/", (req, res) => {
-  res.send("Servidor en funcionamiento ✅");
+app.get('/', (req, res) => {
+  res.send('Servidor en funcionamiento ✅');
 });
 
 // ---------------------------
@@ -162,6 +162,6 @@ app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 
   // Ejecutar bots después de iniciar servidor
-  ejecutarBot("Bot Discord", "node bot.js");
-  ejecutarBot("Bot Telegram", "node bot-telegram-novelas.js");
+  ejecutarBot('Bot Discord', 'node bot.js');
+  ejecutarBot('Bot Telegram', 'node bot-telegram-novelas.js');
 });
