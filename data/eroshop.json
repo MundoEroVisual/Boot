@@ -1,5 +1,12 @@
 {
-  "users": {},
+  "users": {
+    "1030923635646529637": {
+      "gems": 100,
+      "points": 0,
+      "level": 1,
+      "inventory": []
+    }
+  },
   "shop": [
     {
       "id": "vip1d",
@@ -60,6 +67,36 @@
       "name": "Caja Sorpresa",
       "price": 70,
       "emoji": "🎁"
+    },
+    {
+      "id": "vip6m",
+      "name": "VIP 6 Meses",
+      "price": 1800,
+      "emoji": "👑"
+    },
+    {
+      "id": "vip12m",
+      "name": "VIP 1 Año",
+      "price": 3000,
+      "emoji": "👑"
+    },
+    {
+      "id": "caja_premium",
+      "name": "Caja Sorpresa Premium",
+      "price": 200,
+      "emoji": "🎁"
+    },
+    {
+      "id": "emoji_personal",
+      "name": "Emoji Personalizado",
+      "price": 120,
+      "emoji": "😃"
+    },
+    {
+      "id": "rol_personal",
+      "name": "Rol Personalizado",
+      "price": 250,
+      "emoji": "🏷️"
     }
   ],
   "missions": [
