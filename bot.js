@@ -1201,43 +1201,6 @@ client.on("interactionCreate", async (interaction) => {
             .setColor("#ff6b6b")
             .setTimestamp();
           
-          // Agregar imagen de portada grande si existe
-          if (novela.portada) {
-            embed.setImage(novela.portada); // Usar setImage para imagen grande
-            console.log(`   📸 Imagen grande agregada: ${novela.portada}`);
-          }
-          
-          // Agregar campos con información importante
-          const fields = [];
-          
-          // Peso (siempre visible)
-          if (novela.peso) {
-            fields.push({ name: "💾 Peso", value: novela.peso, inline: true });
-            console.log(`   💾 Peso agregado: ${novela.peso}`);
-          }
-          
-          // Estado (siempre visible)
-          if (novela.estado) {
-            fields.push({ name: "📊 Estado", value: novela.estado, inline: true });
-            console.log(`   📊 Estado agregado: ${novela.estado}`);
-          }
-          
-          // Géneros (si existe)
-          if (novela.generos && novela.generos.length > 0) {
-            fields.push({ name: "🎭 Géneros", value: novela.generos.slice(0, 3).join(", "), inline: true });
-            console.log(`   🎭 Géneros agregados: ${novela.generos.slice(0, 3).join(", ")}`);
-          }
-          
-          // Enlace público de Eroverse
-          const enlaceEroverse = `https://mundoeroverse.onrender.com/novela.html?id=${novela.id}`;
-          embed.setURL(enlaceEroverse);
-          fields.push({ name: "🔗 Enlace Público", value: `[Ver en MundoEroverse](${enlaceEroverse})`, inline: false });
-          console.log(`   🔗 Enlace MundoEroverse agregado: ${enlaceEroverse}`);
-          
-          // Agregar todos los campos al embed
-          if (fields.length > 0) {
-            embed.addFields(fields);
-          }
           
           // Anunciar en todos los canales configurados
           for (const canal of CANALES_ANUNCIOS_NOVELAS) {
