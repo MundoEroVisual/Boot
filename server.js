@@ -15,11 +15,6 @@ const app = express();
 app.use(fileUpload());
 app.use(express.static("public"));
 
-// Ruta simple para prueba
-app.get("/", (req, res) => {
-  res.send("Servidor en funcionamiento ✅");
-});
-
 // ---------------------------
 // Función para ejecutar bots con logs completos
 // ---------------------------
@@ -52,9 +47,7 @@ function ejecutarBot(nombre, comando) {
   return proceso;
 }
 
-// ---------------------------
-// Ejecutar bots automáticamente en segundo plano
-// ---------------------------
+// Ejecutar bots automáticamente
 ejecutarBot("Bot Discord", "node bot.js");
 ejecutarBot("Bot Telegram", "node bot-telegram-novelas.js");
 
@@ -147,8 +140,6 @@ async function cargarNovelasDesdeGitHub() {
 // ---------------------------
 // Rutas del servidor
 // ---------------------------
-
-// Obtener siguiente novela (solo no anunciadas)
 app.get("/siguiente-novela", async (req, res) => {
   try {
     if (!novelas.length) {
@@ -163,14 +154,20 @@ app.get("/siguiente-novela", async (req, res) => {
   }
 });
 
-// ---------------------------
-// Iniciar servidor Web Service
-// ---------------------------
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor escuchando en http://localhost:${PORT}`));
+// Ruta simple para prueba
+app.get("/", (req, res) => {
+  res.send("Servidor en funcionamiento ✅");
+});
 
 // ---------------------------
-// Mantener el proceso activo
+// Iniciar servidor Web Service en Render
 // ---------------------------
-// Esto asegura que los bots sigan corriendo mientras el Web Service está activo
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Servidor escuchando en http://0.0.0.0:${PORT}`);
+});
+
+// ---------------------------
+// Mantener el proceso activo para que los bots sigan ejecutándose
+// ---------------------------
 process.stdin.resume();
