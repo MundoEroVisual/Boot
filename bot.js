@@ -1,5 +1,4 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import 'dotenv/config'; // esta línea debe ser la primera
 import fs from 'fs';
 import path from 'path';
 import RSSParser from 'rss-parser';
@@ -9,6 +8,7 @@ import { dirname } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
 
 // --- Cola de promesas para guardar participantes del sorteo ---
 class PromiseQueue {
