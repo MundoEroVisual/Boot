@@ -1,45 +1,27 @@
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-import dotenv from 'dotenv';
-dotenv.config();
-import snoowrap from 'snoowrap';
-import { Octokit } from '@octokit/rest';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+import TelegramBot from 'node-telegram-bot-api';
 import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
+import { Octokit } from '@octokit/rest';
+dotenv.config();
 
-// Colores para consola
-const color = {
-  reset: '\x1b[0m',
-  bright: '\x1b[1m',
-  dim: '\x1b[2m',
-  fgGreen: '\x1b[32m',
-  fgRed: '\x1b[31m',
-  fgYellow: '\x1b[33m',
-  fgBlue: '\x1b[34m',
-  fgCyan: '\x1b[36m',
-  fgMagenta: '\x1b[35m',
-  fgWhite: '\x1b[37m',
-  fgGray: '\x1b[90m',
-};
-
-// Config Reddit
-const reddit = new snoowrap({
-  userAgent: 'EroverseBot/1.0 by ' + process.env.REDDIT_USERNAME,
-  clientId: process.env.REDDIT_CLIENT_ID,
-  clientSecret: process.env.REDDIT_CLIENT_SECRET,
-  username: process.env.REDDIT_USERNAME,
-  password: process.env.REDDIT_PASSWORD
-});
-
-const REDDIT_SUBREDDIT = process.env.REDDIT_SUBREDDIT || 'MundoEroVisual';
-
-// Config GitHub
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-const NOVELAS_JSON_GITHUB_PATH = process.env.NOVELAS_JSON_GITHUB_PATH;
-const NOVELAS_ANUNCIADAS_GITHUB_PATH = process.env.NOVELAS_ANUNCIADAS_GITHUB_PATH;
+const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8370263454:AAH8kyMqQMkSWewPK9tXgaYosFbRyjknV04';
+const TELEGRAM_CHANNEL_ID = process.env.TELEGRAM_CHANNEL_ID || '-1002812250240';
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_OWNER = process.env.GITHUB_OWNER;
 const GITHUB_REPO = process.env.GITHUB_REPO;
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
+const NOVELAS_JSON_GITHUB_PATH = 'data/novelas-1.json';
+const NOVELAS_ANUNCIADAS_GITHUB_PATH = 'data/novelasAnunciadasTelegram.json';
 
-// Cargar novelas desde GitHub
+const bot = new TelegramBot(TELEGRAM_TOKEN);
+const octokit = new Octokit({ auth: GITHUB_TOKEN });
+
 async function cargarNovelasDesdeGitHub() {
   try {
     const { data } = await octokit.repos.getContent({
@@ -50,15 +32,13 @@ async function cargarNovelasDesdeGitHub() {
     });
     const content = Buffer.from(data.content, 'base64').toString('utf-8');
     const arr = JSON.parse(content);
-    console.log(`${color.fgCyan}📦 Novelas cargadas desde GitHub: ${color.fgGreen}${Array.isArray(arr) ? arr.length : 0}${color.reset}`);
     return Array.isArray(arr) ? arr : [];
   } catch (e) {
-    console.error(`${color.fgRed}❌ Error leyendo novelas desde GitHub:${color.reset} ${e.message || e}`);
+  console.error('Error leyendo novelas desde GitHub:', e?.message || e);
     return [];
   }
 }
 
-// Cargar novelas ya anunciadas
 async function cargarNovelasAnunciadas() {
   try {
     const { data } = await octokit.repos.getContent({
@@ -69,19 +49,18 @@ async function cargarNovelasAnunciadas() {
     });
     const content = Buffer.from(data.content, 'base64').toString('utf-8');
     const arr = JSON.parse(content);
-    console.log(`${color.fgCyan}📚 Novelas ya anunciadas: ${color.fgYellow}${Array.isArray(arr) ? arr.length : 0}${color.reset}`);
     return new Set(Array.isArray(arr) ? arr : []);
-  } catch {
-    console.log(`${color.fgGray}ℹ️  No hay registro previo de novelas anunciadas.${color.reset}`);
+  } catch (e) {
+    // Si no existe el archivo, retorna set vacío
     return new Set();
   }
 }
 
-// Guardar novelas anunciadas
 async function guardarNovelasAnunciadas(set) {
   const arr = Array.from(set);
-  let sha;
+  let sha = undefined;
   try {
+    // Obtener SHA si el archivo existe
     const { data } = await octokit.repos.getContent({
       owner: GITHUB_OWNER,
       repo: GITHUB_REPO,
@@ -89,84 +68,132 @@ async function guardarNovelasAnunciadas(set) {
       ref: GITHUB_BRANCH
     });
     sha = data.sha;
-  } catch {}
+  } catch (e) {
+    // Si no existe, lo creamos
+  }
   await octokit.repos.createOrUpdateFileContents({
     owner: GITHUB_OWNER,
     repo: GITHUB_REPO,
     path: NOVELAS_ANUNCIADAS_GITHUB_PATH,
-    message: 'Actualizar novelas anunciadas en Reddit',
+    message: 'Actualizar novelas anunciadas en Telegram',
     content: Buffer.from(JSON.stringify(arr, null, 2)).toString('base64'),
     branch: GITHUB_BRANCH,
     sha
   });
-  console.log(`${color.fgMagenta}💾 Registro actualizado de novelas anunciadas (${arr.length})${color.reset}`);
 }
 
-// Obtener nuevas novelas
 async function getNuevasNovelas() {
   const novelas = await cargarNovelasDesdeGitHub();
   const anunciadas = await cargarNovelasAnunciadas();
-  const nuevas = novelas.filter(n => !anunciadas.has(n.id));
-  console.log(`${color.fgBlue}🔎 Novelas nuevas para anunciar: ${color.fgGreen}${nuevas.length}${color.reset}`);
-  return nuevas;
+  return novelas.filter(novela => !anunciadas.has(novela.id));
 }
 
-// Subir novela a Reddit como link post (para que se vea la imagen)
-async function enviarNovelaReddit(novela) {
-  // Log de depuración para ver los datos reales de la novela
-  console.log(`${color.fgYellow}📝 Datos de la novela a publicar:${color.reset}`);
-  console.dir(novela, { depth: null, colors: true });
-  // Sanitizar y asegurar que no haya undefined
-  const titulo = `📖 ${novela.titulo || 'Sin título'}`;
-  const descripcion = novela.desc || 'Sin descripción.';
-  const estado = novela.estado || 'Desconocido';
-  const peso = novela.peso || 'Desconocido';
-  const portada = novela.portada && novela.portada.startsWith('http') ? novela.portada : null;
-  const enlace = `https://eroverse.onrender.com/novela.html?id=${novela.id || ''}`;
+function enviarNovelaTelegram(novela) {
+    let mensaje = `📖 *${novela.titulo}*\n`;
+    mensaje += `${novela.desc ? novela.desc + '\n' : ''}`;
+    if (novela.generos && novela.generos.length > 0) {
+      mensaje += `🎭 *Géneros:* ${novela.generos.join(', ')}\n`;
+    }
+    if (novela.estado) {
+      mensaje += `📊 *Estado:* ${novela.estado}\n`;
+    }
+    if (novela.peso) {
+      mensaje += `💾 *Peso:* ${novela.peso}\n`;
+    }
+    if (novela.fecha) {
+      mensaje += `📅 *Fecha:* ${novela.fecha}\n`;
+    }
+    // No mostrar texto de spoilers ni enlaces, solo las imágenes
+    if (novela.android) {
+      mensaje += `📱 [Android](<${novela.android}>)\n`;
+    }
+    if (novela.android_vip) {
+      mensaje += `🔒 [Android VIP](<${novela.android_vip}>)\n`;
+    }
+    if (novela.pc) {
+      mensaje += `💻 [PC](<${novela.pc}>)\n`;
+    }
+    if (novela.pc_traduccion) {
+      mensaje += `🌐 [PC Traducción](<${novela.pc_traduccion}>)\n`;
+    }
+    if (novela.pc_vip) {
+      mensaje += `🔒 [PC VIP](<${novela.pc_vip}>)\n`;
+    }
+    if (novela.pc_traduccion_vip) {
+      mensaje += `🌐🔒 [PC Traducción VIP](<${novela.pc_traduccion_vip}>)\n`;
+    }
+    mensaje += `\n[Ver en MundoEroverse](https://mundoeroverse.onrender.com/novela.html?id=${novela.id})`;
 
-  // Formato bonito en Markdown
-  let mensaje = `**${titulo}**\n\n`;
-  mensaje += `> ${descripcion}\n\n`;
-  mensaje += `📊 **Estado:** ${estado}  \n`;
-  mensaje += `💾 **Peso:** ${peso}  \n`;
-  mensaje += `🌐 **Idioma:** Español  \n`;
-  mensaje += `\n[🔗 Enlace público a la novela](${enlace})`;
-  if (portada) {
-    mensaje += `\n\n---\n\n`;
-    mensaje += `![Portada de la novela](${portada})`;
-  }
+    // Enviar portada y spoilers como imágenes antes del mensaje
+    // Filtrar solo imágenes válidas para Telegram
+    const isValidImage = url => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+    const images = [];
+    if (novela.portada && isValidImage(novela.portada)) images.push(novela.portada);
+    if (novela.spoilers && Array.isArray(novela.spoilers)) {
+      images.push(...novela.spoilers.filter(isValidImage));
+    }
 
-  try {
-    // Siempre usar selfpost para poder mostrar Markdown y la imagen embebida
-    await reddit.getSubreddit(REDDIT_SUBREDDIT).submitSelfpost({
-      title: titulo,
-      text: mensaje
-    });
-    console.log(`${color.fgGreen}✅ Publicada en Reddit:${color.reset} ${color.bright}${novela.titulo}${color.reset} ${color.fgCyan}[ID: ${novela.id}]${color.reset}`);
-  } catch (err) {
-    console.error(`${color.fgRed}❌ Error publicando en Reddit:${color.reset} ${err?.message || err}`);
-  }
+    // Enviar todas las imágenes como grupo si hay más de una
+    if (images.length > 0) {
+      const mediaGroup = images.map((url, idx) => ({
+        type: 'photo',
+        media: url,
+        caption: idx === 0 ? mensaje : undefined,
+        parse_mode: idx === 0 ? 'Markdown' : undefined
+      }));
+      // Enviar el grupo y si alguna imagen falla, Telegram la omite automáticamente
+      return bot.sendMediaGroup(TELEGRAM_CHANNEL_ID, mediaGroup).catch(async err => {
+        if (err?.response?.body?.error_code === 429) {
+          console.error(`Rate limit de Telegram: espera ${err.response.body.parameters.retry_after} segundos`);
+        } else {
+          console.error(`Error enviando grupo de imágenes: ${err?.message || err}`);
+        }
+        // Si el grupo falla, intenta enviar la primera imagen válida con el mensaje como caption
+        try {
+          await bot.sendPhoto(TELEGRAM_CHANNEL_ID, images[0], {
+            caption: mensaje,
+            parse_mode: 'Markdown'
+          });
+        } catch (imgErr) {
+          if (imgErr?.response?.body?.error_code === 429) {
+            console.error(`Rate limit de Telegram: espera ${imgErr.response.body.parameters.retry_after} segundos`);
+          } else {
+            console.error(`Error enviando imagen individual: ${imgErr?.message || imgErr}`);
+          }
+          // Si también falla, enviar solo el mensaje
+          return bot.sendMessage(TELEGRAM_CHANNEL_ID, mensaje, { parse_mode: 'Markdown', disable_web_page_preview: false });
+        }
+      });
+    } else {
+      return bot.sendMessage(TELEGRAM_CHANNEL_ID, mensaje, { parse_mode: 'Markdown', disable_web_page_preview: false });
+    }
 }
 
-// Función principal
 async function anunciarNuevasNovelas() {
   const nuevas = await getNuevasNovelas();
-  if (!nuevas.length) {
-    console.log(`${color.fgYellow}✨ No hay novelas nuevas para anunciar.${color.reset}`);
+  if (nuevas.length === 0) {
+  console.log('No hay novelas nuevas para anunciar.');
     return;
   }
-  console.log(`${color.fgMagenta}🚀 Anunciando ${nuevas.length} novela(s) nueva(s)...${color.reset}`);
   const anunciadas = await cargarNovelasAnunciadas();
   for (const novela of nuevas) {
     try {
-      await enviarNovelaReddit(novela);
+      await enviarNovelaTelegram(novela);
+  console.log(`✅ Novela anunciada en Telegram: ${novela.titulo}`);
       anunciadas.add(novela.id);
       await guardarNovelasAnunciadas(anunciadas);
     } catch (err) {
-      console.error(`${color.fgRed}❌ Error publicando en Reddit:${color.reset} ${err?.message || err}`);
+      if (err?.response?.body?.error_code === 429) {
+        console.error(`Rate limit de Telegram: espera ${err.response.body.parameters.retry_after} segundos`);
+      } else {
+        console.error(`❌ Error enviando a Telegram: ${err?.message || err}`);
+      }
     }
   }
-  console.log(`${color.fgGreen}🎉 Proceso de anuncios finalizado.${color.reset}`);
 }
 
-// El bot solo se ejecutará cuando se llame manualmente desde el frontend (no automático)
+// Ejecuta el anuncio al iniciar
+anunciarNuevasNovelas();
+
+// Si quieres que revise cada cierto tiempo, descomenta:
+// setInterval(anunciarNuevasNovelas, 5 * 60 * 1000); // cada 5 minutos
