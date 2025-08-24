@@ -1,5 +1,4 @@
 {
-  "type": "module",
   "name": "bot",
   "version": "1.0.0",
   "main": "bot.js",
@@ -17,8 +16,7 @@
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "express-fileupload": "^1.5.2",
-    "node-telegram-bot-api": "^0.63.0",
-    "rss-parser": "^3.13.0",
-    "snoowrap": "^1.15.2"
+    "node-telegram-bot-api": "^0.66.0",
+    "rss-parser": "^3.13.0"
   }
 }
