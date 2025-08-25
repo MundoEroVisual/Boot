@@ -88,7 +88,7 @@ async function getNuevasNovelas() {
   return novelas.filter(novela => !anunciadas.has(novela.id));
 }
 
-function enviarNovelaTelegram(novela) {
+async function enviarNovelaTelegram(novela) {
     let mensaje = `📖 *${novela.titulo}*\n`;
     mensaje += `${novela.desc ? novela.desc + '\n' : ''}`;
     if (novela.generos && novela.generos.length > 0) {
@@ -122,7 +122,22 @@ function enviarNovelaTelegram(novela) {
     if (novela.pc_traduccion_vip) {
       mensaje += `🌐🔒 [PC Traducción VIP](<${novela.pc_traduccion_vip}>)\n`;
     }
-    mensaje += `\n[Ver en MundoEroverse](https://eroverse.onrender.com/novela.html?id=${novela.id})`;
+    // Acortar el enlace público usando la API de Cuty
+    const enlaceOriginal = `https://eroverse.onrender.com/novela.html?id=${novela.id}`;
+    let enlaceCuty = enlaceOriginal;
+    try {
+      const cutyToken = process.env.CUTY_TOKEN_AMIGO || '1da78acf599a92323be9c1f53';
+      const cutyRes = await fetch(`https://cutt.ly/api/api.php?key=${cutyToken}&short=${encodeURIComponent(enlaceOriginal)}`);
+      const cutyJson = await cutyRes.json();
+      if (cutyJson.url && cutyJson.url.status === 7) {
+        enlaceCuty = cutyJson.url.shortLink;
+      } else {
+        console.error('Error acortando enlace con Cuty:', cutyJson.url);
+      }
+    } catch (e) {
+      console.error('Error llamando a la API de Cuty:', e?.message || e);
+    }
+    mensaje += `\n[Ver en Eroverse](${enlaceCuty})`;
 
     // Enviar portada y spoilers como imágenes antes del mensaje
     // Filtrar solo imágenes válidas para Telegram
