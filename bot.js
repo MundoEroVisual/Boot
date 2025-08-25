@@ -1,5 +1,4 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import 'dotenv/config'; // esta línea debe ser la primera
 import fs from 'fs';
 import path from 'path';
 import RSSParser from 'rss-parser';
@@ -9,6 +8,7 @@ import { dirname } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
 
 // --- Cola de promesas para guardar participantes del sorteo ---
 class PromiseQueue {
@@ -44,7 +44,8 @@ const CANAL_ANUNCIOS_ID = process.env.CANAL_ANUNCIOS_ID || "1372061643105898527"
 // Canales para anuncios de novelas (ambos canales)
 const CANALES_ANUNCIOS_NOVELAS = [
   "1372063183446999071", // Canal de anuncios de videos de YouTube
-  "1396729794325905479"  // Canal adicional
+  "1396729794325905479",
+  "1409604201704722614"  // Canal adicional
 ];
 
 // Canal específico para videos de YouTube
