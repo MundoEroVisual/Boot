@@ -4,6 +4,7 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 import TelegramBot from 'node-telegram-bot-api';
+import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -132,7 +133,7 @@ async function enviarNovelaTelegram(novela) {
       if (cutyJson.url && cutyJson.url.status === 7) {
         enlaceCuty = cutyJson.url.shortLink;
       } else {
-        console.error('Error acortando enlace con Cuty:', cutyJson.url);
+        console.error('Error acortando enlace con Cuty:', JSON.stringify(cutyJson.url));
       }
     } catch (e) {
       console.error('Error llamando a la API de Cuty:', e?.message || e);
