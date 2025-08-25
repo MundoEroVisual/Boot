@@ -123,20 +123,21 @@ async function enviarNovelaTelegram(novela) {
     if (novela.pc_traduccion_vip) {
       mensaje += `🌐🔒 [PC Traducción VIP](<${novela.pc_traduccion_vip}>)\n`;
     }
-    // Acortar el enlace público usando la API de Cuty
+    // Acortar el enlace público usando el método rápido de Cuty.io
     const enlaceOriginal = `https://eroverse.onrender.com/novela.html?id=${novela.id}`;
     let enlaceCuty = enlaceOriginal;
     try {
       const cutyToken = process.env.CUTY_TOKEN_AMIGO || '1da78acf599a92323be9c1f53';
-      const cutyRes = await fetch(`https://cutt.ly/api/api.php?key=${cutyToken}&short=${encodeURIComponent(enlaceOriginal)}`);
-      const cutyJson = await cutyRes.json();
-      if (cutyJson.url && cutyJson.url.status === 7) {
-        enlaceCuty = cutyJson.url.shortLink;
+      const apiUrl = `https://api.cuty.io/quick?token=${cutyToken}&url=${encodeURIComponent(enlaceOriginal)}`;
+      const cutyRes = await fetch(apiUrl);
+      const shortUrl = await cutyRes.text();
+      if (shortUrl && shortUrl.startsWith('http')) {
+        enlaceCuty = shortUrl.trim();
       } else {
-        console.error('Error acortando enlace con Cuty:', JSON.stringify(cutyJson.url));
+        console.error('Error acortando enlace con Cuty:', shortUrl);
       }
     } catch (e) {
-      console.error('Error llamando a la API de Cuty:', e?.message || e);
+      console.error('Error llamando a la API rápida de Cuty:', e?.message || e);
     }
     mensaje += `\n[Ver en Eroverse](${enlaceCuty})`;
 
