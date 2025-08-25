@@ -2865,7 +2865,7 @@ async function checkNovelas() {
           // Enlace público de Eroverse
           const enlaceEroverse = `https://mundoeroverse.onrender.com/novela.html?id=${novela.id}`;
           embed.setURL(enlaceEroverse);
-          fields.push({ name: "🔗 Enlace Público", value: `[Ver en MundoEroverse](${enlaceEroverse})`, inline: false });
+          fields.push({ name: "🔗 Enlace Público", value: `[Enlace de Descarga](${enlaceEroverse})`, inline: false });
           console.log(`   🔗 Enlace MundoEroverse agregado: ${enlaceEroverse}`);
           
           // Agregar todos los campos al embed
