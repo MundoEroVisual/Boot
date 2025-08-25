@@ -130,11 +130,11 @@ async function enviarNovelaTelegram(novela) {
       const cutyToken = process.env.CUTY_TOKEN_AMIGO || '1da78acf599a92323be9c1f53';
       const apiUrl = `https://api.cuty.io/quick?token=${cutyToken}&url=${encodeURIComponent(enlaceOriginal)}`;
       const cutyRes = await fetch(apiUrl);
-      const cutyJson = await cutyRes.json();
-      if (cutyJson && cutyJson.success && cutyJson.short_url) {
-        enlaceCuty = cutyJson.short_url.trim();
+      const shortUrl = await cutyRes.text();
+      if (shortUrl && shortUrl.startsWith('http')) {
+        enlaceCuty = shortUrl.trim();
       } else {
-        console.error('Error acortando enlace con Cuty:', JSON.stringify(cutyJson));
+        console.error('Error acortando enlace con Cuty:', shortUrl);
       }
     } catch (e) {
       console.error('Error llamando a la API rápida de Cuty:', e?.message || e);
@@ -214,5 +214,4 @@ anunciarNuevasNovelas();
 
 // Si quieres que revise cada cierto tiempo, descomenta:
 // setInterval(anunciarNuevasNovelas, 5 * 60 * 1000); // cada 5 minutos
-
 
