@@ -12,7 +12,7 @@ import { Octokit } from '@octokit/rest';
 dotenv.config();
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHANNEL_ID = process.env.TELEGRAM_CHANNEL_ID || '-1002812250240';
+const TELEGRAM_CHANNELS = ["@EroverseZone"]; // Añade más canales si quieres
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_OWNER = process.env.GITHUB_OWNER;
 const GITHUB_REPO = process.env.GITHUB_REPO;
@@ -90,67 +90,49 @@ async function getNuevasNovelas() {
 }
 
 async function enviarNovelaTelegram(novela) {
-    let mensaje = `📖 *${novela.titulo}*\n`;
-    mensaje += `${novela.desc ? novela.desc + '\n' : ''}`;
-    if (novela.generos && novela.generos.length > 0) {
-      mensaje += `🎭 *Géneros:* ${novela.generos.join(', ')}\n`;
-    }
-    if (novela.estado) {
-      mensaje += `📊 *Estado:* ${novela.estado}\n`;
-    }
-    if (novela.peso) {
-      mensaje += `💾 *Peso:* ${novela.peso}\n`;
-    }
-    if (novela.fecha) {
-      mensaje += `📅 *Fecha:* ${novela.fecha}\n`;
-    }
-    // No mostrar texto de spoilers ni enlaces, solo las imágenes
-    if (novela.android) {
-      mensaje += `📱 [Android](<${novela.android}>)\n`;
-    }
-    if (novela.android_vip) {
-      mensaje += `🔒 [Android VIP](<${novela.android_vip}>)\n`;
-    }
-    if (novela.pc) {
-      mensaje += `💻 [PC](<${novela.pc}>)\n`;
-    }
-    if (novela.pc_traduccion) {
-      mensaje += `🌐 [PC Traducción](<${novela.pc_traduccion}>)\n`;
-    }
-    if (novela.pc_vip) {
-      mensaje += `🔒 [PC VIP](<${novela.pc_vip}>)\n`;
-    }
-    if (novela.pc_traduccion_vip) {
-      mensaje += `🌐🔒 [PC Traducción VIP](<${novela.pc_traduccion_vip}>)\n`;
-    }
-    // Acortar el enlace público usando el método rápido de Cuty.io
-    const enlaceOriginal = `https://eroverse.onrender.com/novela.html?id=${novela.id}`;
-    let enlaceCuty = enlaceOriginal;
-    try {
-      const cutyToken = process.env.CUTY_TOKEN_AMIGO || '1da78acf599a92323be9c1f53';
-      const apiUrl = `https://api.cuty.io/quick?token=${cutyToken}&url=${encodeURIComponent(enlaceOriginal)}`;
-      const cutyRes = await fetch(apiUrl);
-      const cutyJson = await cutyRes.json();
-      if (cutyJson && cutyJson.success && cutyJson.short_url) {
-        enlaceCuty = cutyJson.short_url.trim();
-      } else {
-        console.error('Error acortando enlace con Cuty:', JSON.stringify(cutyJson));
-      }
-    } catch (e) {
-      console.error('Error llamando a la API rápida de Cuty:', e?.message || e);
-    }
-    mensaje += `\n[Ver en Eroverse](${enlaceCuty})`;
+  let mensaje = `📖 *${novela.titulo}*\n`;
+  mensaje += `${novela.desc ? novela.desc + '\n' : ''}`;
+  if (novela.generos && novela.generos.length > 0) {
+    mensaje += `🎭 *Géneros:* ${novela.generos.join(', ')}\n`;
+  }
+  if (novela.estado) {
+    mensaje += `📊 *Estado:* ${novela.estado}\n`;
+  }
+  if (novela.peso) {
+    mensaje += `💾 *Peso:* ${novela.peso}\n`;
+  }
+  if (novela.fecha) {
+    mensaje += `📅 *Fecha:* ${novela.fecha}\n`;
+  }
+  if (novela.android) {
+    mensaje += `📱 [Android](<${novela.android}>)\n`;
+  }
+  if (novela.android_vip) {
+    mensaje += `🔒 [Android VIP](<${novela.android_vip}>)\n`;
+  }
+  if (novela.pc) {
+    mensaje += `💻 [PC](<${novela.pc}>)\n`;
+  }
+  if (novela.pc_traduccion) {
+    mensaje += `🌐 [PC Traducción](<${novela.pc_traduccion}>)\n`;
+  }
+  if (novela.pc_vip) {
+    mensaje += `🔒 [PC VIP](<${novela.pc_vip}>)\n`;
+  }
+  if (novela.pc_traduccion_vip) {
+    mensaje += `🌐🔒 [PC Traducción VIP](<${novela.pc_traduccion_vip}>)\n`;
+  }
+  const enlaceOriginal = `https://eroverse.onrender.com/novela.html?id=${novela.id}`;
+  mensaje += `\n[Ver en Eroverse](${enlaceOriginal})`;
 
-    // Enviar portada y spoilers como imágenes antes del mensaje
-    // Filtrar solo imágenes válidas para Telegram
-    const isValidImage = url => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-    const images = [];
-    if (novela.portada && isValidImage(novela.portada)) images.push(novela.portada);
-    if (novela.spoilers && Array.isArray(novela.spoilers)) {
-      images.push(...novela.spoilers.filter(isValidImage));
-    }
-
-    // Enviar todas las imágenes como grupo si hay más de una
+  const isValidImage = url => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+  const images = [];
+  if (novela.portada && isValidImage(novela.portada)) images.push(novela.portada);
+  if (novela.spoilers && Array.isArray(novela.spoilers)) {
+    images.push(...novela.spoilers.filter(isValidImage));
+  }
+  for (const canal of TELEGRAM_CHANNELS) {
+    console.log(`Enviando novela a: ${canal}`);
     if (images.length > 0) {
       const mediaGroup = images.map((url, idx) => ({
         type: 'photo',
@@ -158,16 +140,14 @@ async function enviarNovelaTelegram(novela) {
         caption: idx === 0 ? mensaje : undefined,
         parse_mode: idx === 0 ? 'Markdown' : undefined
       }));
-      // Enviar el grupo y si alguna imagen falla, Telegram la omite automáticamente
-      return bot.sendMediaGroup(TELEGRAM_CHANNEL_ID, mediaGroup).catch(async err => {
+      await bot.sendMediaGroup(canal, mediaGroup).catch(async err => {
         if (err?.response?.body?.error_code === 429) {
           console.error(`Rate limit de Telegram: espera ${err.response.body.parameters.retry_after} segundos`);
         } else {
           console.error(`Error enviando grupo de imágenes: ${err?.message || err}`);
         }
-        // Si el grupo falla, intenta enviar la primera imagen válida con el mensaje como caption
         try {
-          await bot.sendPhoto(TELEGRAM_CHANNEL_ID, images[0], {
+          await bot.sendPhoto(canal, images[0], {
             caption: mensaje,
             parse_mode: 'Markdown'
           });
@@ -177,13 +157,13 @@ async function enviarNovelaTelegram(novela) {
           } else {
             console.error(`Error enviando imagen individual: ${imgErr?.message || imgErr}`);
           }
-          // Si también falla, enviar solo el mensaje
-          return bot.sendMessage(TELEGRAM_CHANNEL_ID, mensaje, { parse_mode: 'Markdown', disable_web_page_preview: false });
+          await bot.sendMessage(canal, mensaje, { parse_mode: 'Markdown', disable_web_page_preview: false });
         }
       });
     } else {
-      return bot.sendMessage(TELEGRAM_CHANNEL_ID, mensaje, { parse_mode: 'Markdown', disable_web_page_preview: false });
+      await bot.sendMessage(canal, mensaje, { parse_mode: 'Markdown', disable_web_page_preview: false });
     }
+  }
 }
 
 async function anunciarNuevasNovelas() {
