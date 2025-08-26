@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 import TelegramBot from 'node-telegram-bot-api';
@@ -11,15 +12,15 @@ import { Octokit } from '@octokit/rest';
 dotenv.config();
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHANNEL_ID = "@EroverseZone"; // Usa el @usuario del canal
+const TELEGRAM_CHANNELS = ["@EroverseZone","@xdetrohx"]; // Añade más canales si quieres
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_OWNER = process.env.GITHUB_OWNER;
 const GITHUB_REPO = process.env.GITHUB_REPO;
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 const NOVELAS_JSON_GITHUB_PATH = 'data/novelas-1.json';
-const NOVELAS_ANUNCIADAS_GITHUB_PATH = 'data/novelasanunciadaseroverse.json';
+const NOVELAS_ANUNCIADAS_GITHUB_PATH = 'data/novelasAnunciadasTelegram.json';
 
-const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
+const bot = new TelegramBot(TELEGRAM_TOKEN);
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
 async function cargarNovelasDesdeGitHub() {
@@ -34,7 +35,7 @@ async function cargarNovelasDesdeGitHub() {
     const arr = JSON.parse(content);
     return Array.isArray(arr) ? arr : [];
   } catch (e) {
-    console.error('Error leyendo novelas desde GitHub:', e?.message || e);
+  console.error('Error leyendo novelas desde GitHub:', e?.message || e);
     return [];
   }
 }
@@ -51,6 +52,7 @@ async function cargarNovelasAnunciadas() {
     const arr = JSON.parse(content);
     return new Set(Array.isArray(arr) ? arr : []);
   } catch (e) {
+    // Si no existe el archivo, retorna set vacío
     return new Set();
   }
 }
@@ -59,6 +61,7 @@ async function guardarNovelasAnunciadas(set) {
   const arr = Array.from(set);
   let sha = undefined;
   try {
+    // Obtener SHA si el archivo existe
     const { data } = await octokit.repos.getContent({
       owner: GITHUB_OWNER,
       repo: GITHUB_REPO,
@@ -67,7 +70,7 @@ async function guardarNovelasAnunciadas(set) {
     });
     sha = data.sha;
   } catch (e) {
-    // Si no existe en GitHub, lo creamos
+    // Si no existe, lo creamos
   }
   await octokit.repos.createOrUpdateFileContents({
     owner: GITHUB_OWNER,
@@ -119,24 +122,24 @@ async function enviarNovelaTelegram(novela) {
   if (novela.pc_traduccion_vip) {
     mensaje += `🌐🔒 [PC Traducción VIP](<${novela.pc_traduccion_vip}>)\n`;
   }
-  // Acortar el enlace público usando el método rápido de Cuty.io
-  const enlaceOriginal = `https://eroverse.onrender.com/novela.html?id=${novela.id}`;
-  let enlaceCuty = enlaceOriginal;
-  try {
-    const cutyToken = process.env.CUTY_TOKEN_AMIGO;
-    if (!cutyToken) throw new Error('No se encontró CUTY_TOKEN_AMIGO en el .env');
-    const apiUrl = `https://api.cuty.io/quick?token=${cutyToken}&url=${encodeURIComponent(enlaceOriginal)}`;
-    const cutyRes = await fetch(apiUrl);
-    const cutyJson = await cutyRes.json();
-    if (cutyJson && cutyJson.success && cutyJson.short_url) {
-      enlaceCuty = cutyJson.short_url.trim();
-    } else {
-      console.error('Error acortando enlace con Cuty:', JSON.stringify(cutyJson));
-    }
-  } catch (e) {
-    console.error('Error llamando a la API rápida de Cuty:', e?.message || e);
-  }
-  mensaje += `\n[Ver en Eroverse](${enlaceCuty})`;
+ // Acortar el enlace público usando el método rápido de Cuty.io
+ const enlaceOriginal = `https://eroverse.onrender.com/novela.html?id=${novela.id}`;
+ let enlaceCuty = enlaceOriginal;
+ try {
+   const cutyToken = process.env.CUTY_TOKEN_AMIGO;
+   if (!cutyToken) throw new Error('No se encontró CUTY_TOKEN_AMIGO en el .env');
+   const apiUrl = `https://api.cuty.io/quick?token=${cutyToken}&url=${encodeURIComponent(enlaceOriginal)}`;
+   const cutyRes = await fetch(apiUrl);
+   const cutyJson = await cutyRes.json();
+   if (cutyJson && cutyJson.success && cutyJson.short_url) {
+     enlaceCuty = cutyJson.short_url.trim();
+   } else {
+     console.error('Error acortando enlace con Cuty:', JSON.stringify(cutyJson));
+   }
+ } catch (e) {
+   console.error('Error llamando a la API rápida de Cuty:', e?.message || e);
+ }
+ mensaje += `\n[Ver en Eroverse](${enlaceCuty})`;
 
   const isValidImage = url => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
   const images = [];
@@ -144,49 +147,52 @@ async function enviarNovelaTelegram(novela) {
   if (novela.spoilers && Array.isArray(novela.spoilers)) {
     images.push(...novela.spoilers.filter(isValidImage));
   }
-  if (images.length > 0) {
-    const mediaGroup = images.map((url, idx) => ({
-      type: 'photo',
-      media: url,
-      caption: idx === 0 ? mensaje : undefined,
-      parse_mode: idx === 0 ? 'Markdown' : undefined
-    }));
-    return bot.sendMediaGroup(TELEGRAM_CHANNEL_ID, mediaGroup).catch(async err => {
-      if (err?.response?.body?.error_code === 429) {
-        console.error(`Rate limit de Telegram: espera ${err.response.body.parameters.retry_after} segundos`);
-      } else {
-        console.error(`Error enviando grupo de imágenes: ${err?.message || err}`);
-      }
-      try {
-        await bot.sendPhoto(TELEGRAM_CHANNEL_ID, images[0], {
-          caption: mensaje,
-          parse_mode: 'Markdown'
-        });
-      } catch (imgErr) {
-        if (imgErr?.response?.body?.error_code === 429) {
-          console.error(`Rate limit de Telegram: espera ${imgErr.response.body.parameters.retry_after} segundos`);
+  for (const canal of TELEGRAM_CHANNELS) {
+    console.log(`Enviando novela a: ${canal}`);
+    if (images.length > 0) {
+      const mediaGroup = images.map((url, idx) => ({
+        type: 'photo',
+        media: url,
+        caption: idx === 0 ? mensaje : undefined,
+        parse_mode: idx === 0 ? 'Markdown' : undefined
+      }));
+      await bot.sendMediaGroup(canal, mediaGroup).catch(async err => {
+        if (err?.response?.body?.error_code === 429) {
+          console.error(`Rate limit de Telegram: espera ${err.response.body.parameters.retry_after} segundos`);
         } else {
-          console.error(`Error enviando imagen individual: ${imgErr?.message || imgErr}`);
+          console.error(`Error enviando grupo de imágenes: ${err?.message || err}`);
         }
-        return bot.sendMessage(TELEGRAM_CHANNEL_ID, mensaje, { parse_mode: 'Markdown', disable_web_page_preview: false });
-      }
-    });
-  } else {
-    return bot.sendMessage(TELEGRAM_CHANNEL_ID, mensaje, { parse_mode: 'Markdown', disable_web_page_preview: false });
+        try {
+          await bot.sendPhoto(canal, images[0], {
+            caption: mensaje,
+            parse_mode: 'Markdown'
+          });
+        } catch (imgErr) {
+          if (imgErr?.response?.body?.error_code === 429) {
+            console.error(`Rate limit de Telegram: espera ${imgErr.response.body.parameters.retry_after} segundos`);
+          } else {
+            console.error(`Error enviando imagen individual: ${imgErr?.message || imgErr}`);
+          }
+          await bot.sendMessage(canal, mensaje, { parse_mode: 'Markdown', disable_web_page_preview: false });
+        }
+      });
+    } else {
+      await bot.sendMessage(canal, mensaje, { parse_mode: 'Markdown', disable_web_page_preview: false });
+    }
   }
 }
 
 async function anunciarNuevasNovelas() {
   const nuevas = await getNuevasNovelas();
   if (nuevas.length === 0) {
-    console.log('No hay novelas nuevas para anunciar.');
+  console.log('No hay novelas nuevas para anunciar.');
     return;
   }
   const anunciadas = await cargarNovelasAnunciadas();
   for (const novela of nuevas) {
     try {
       await enviarNovelaTelegram(novela);
-      console.log(`✅ Novela anunciada en Telegram: ${novela.titulo}`);
+  console.log(`✅ Novela anunciada en Telegram: ${novela.titulo}`);
       anunciadas.add(novela.id);
       await guardarNovelasAnunciadas(anunciadas);
     } catch (err) {
@@ -201,3 +207,6 @@ async function anunciarNuevasNovelas() {
 
 // Ejecuta el anuncio al iniciar
 anunciarNuevasNovelas();
+
+// Si quieres que revise cada cierto tiempo, descomenta:
+// setInterval(anunciarNuevasNovelas, 5 * 60 * 1000); // cada 5 minutos
