@@ -1,3 +1,6 @@
+// ---------------------------
+// Cargar variables de entorno
+// ---------------------------
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -121,8 +124,13 @@ function ejecutarBot(nombre, comando, args = []) {
 
         proceso.on('close', (code) => {
             console.log(`[${nombre}] proceso cerrado con código: ${code}`);
-            console.log(`⚠️ Reiniciando ${nombre} en 5 segundos...`);
-            setTimeout(lanzar, 5000);
+            // Solo reiniciar si hubo error (code !== 0)
+            if (code !== 0) {
+                console.log(`⚠️ Reiniciando ${nombre} en 5 segundos...`);
+                setTimeout(lanzar, 5000);
+            } else {
+                console.log(`[${nombre}] finalizó correctamente, no se reiniciará automáticamente.`);
+            }
         });
 
         proceso.on('error', (err) => {
