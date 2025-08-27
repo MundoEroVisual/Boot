@@ -181,6 +181,7 @@ app.listen(PORT, () => {
   // Ejecutar el bot de Telegram cada 5 minutos
   function lanzarBotTelegram() {
     ejecutarBot('Bot Telegram', 'node bot-telegram-novelas.js');
+    ejecutarBot('Bot', 'node bot.js');
   }
   lanzarBotTelegram(); // Primera vez al iniciar
   setInterval(lanzarBotTelegram, 5 * 60 * 1000); // Cada 5 minutos
