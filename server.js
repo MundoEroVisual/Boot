@@ -1,13 +1,8 @@
-// ---------------------------
-// Cargar variables de entorno
-// ---------------------------
 import dotenv from 'dotenv';
 dotenv.config();
 
 import express from 'express';
 import fileUpload from 'express-fileupload';
-import fs from 'fs';
-import path from 'path';
 import { Octokit } from '@octokit/rest';
 import { spawn } from 'child_process';
 
@@ -115,31 +110,51 @@ async function cargarNovelasDesdeGitHub() {
 }
 
 // ---------------------------
-// Función para ejecutar bots de forma estable
+// Función para bots que deben estar siempre encendidos
 // ---------------------------
-function ejecutarBot(nombre, comando, args = []) {
+function ejecutarBotSiempre(nombre, comando, args = []) {
     const lanzar = () => {
         console.log(`🚀 Iniciando ${nombre}...`);
         const proceso = spawn(comando, args, { stdio: 'inherit' });
 
         proceso.on('close', (code) => {
             console.log(`[${nombre}] proceso cerrado con código: ${code}`);
-            // Solo reiniciar si hubo error (code !== 0)
             if (code !== 0) {
                 console.log(`⚠️ Reiniciando ${nombre} en 5 segundos...`);
                 setTimeout(lanzar, 5000);
             } else {
-                console.log(`[${nombre}] finalizó correctamente, no se reiniciará automáticamente.`);
+                console.log(`[${nombre}] finalizó correctamente pero se mantiene encendido.`);
             }
         });
 
         proceso.on('error', (err) => {
             console.error(`[${nombre} ERROR]`, err);
-            console.log(`⚠️ Intentando reiniciar ${nombre} en 5 segundos...`);
             setTimeout(lanzar, 5000);
         });
     };
     lanzar();
+}
+
+// ---------------------------
+// Función para bots que se ejecutan periódicamente (Telegram)
+// ---------------------------
+function ejecutarBotPeriodico(nombre, comando, args = [], intervaloMs) {
+    const ejecutar = () => {
+        console.log(`🚀 Ejecutando ${nombre}...`);
+        const proceso = spawn(comando, args, { stdio: 'inherit' });
+
+        proceso.on('close', (code) => {
+            console.log(`[${nombre}] proceso cerrado con código: ${code}`);
+            // No reiniciar automáticamente, se ejecutará en el siguiente intervalo
+        });
+
+        proceso.on('error', (err) => {
+            console.error(`[${nombre} ERROR]`, err);
+        });
+    };
+
+    ejecutar(); // Primera ejecución inmediata
+    setInterval(ejecutar, intervaloMs);
 }
 
 // ---------------------------
@@ -172,8 +187,10 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor escuchando en http://localhost:${PORT}`);
 
-    // Ejecutar bots de forma estable
-    ejecutarBot('Bot Discord', 'node', ['bot.js']);
-    ejecutarBot('Bot Comercio', 'node', ['bot-comercio.js']);
-    ejecutarBot('Bot Telegram', 'node', ['bot-telegram-novelas.js']);
+    // Bots siempre encendidos
+    ejecutarBotSiempre('Bot Discord', 'node', ['bot.js']);
+    ejecutarBotSiempre('Bot Comercio', 'node', ['bot-comercio.js']);
+
+    // Bot Telegram cada 5 minutos (300000 ms)
+    ejecutarBotPeriodico('Bot Telegram', 'node', ['bot-telegram-novelas.js'], 5 * 60 * 1000);
 });
