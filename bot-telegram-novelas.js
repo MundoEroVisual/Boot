@@ -12,7 +12,7 @@ import { Octokit } from '@octokit/rest';
 dotenv.config();
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHANNELS = ["@EroverseZone","-1002838228703"]; // Añade más canales si quieres
+const TELEGRAM_CHANNELS = ["@EroverseZone"]; // Añade más canales si quieres
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_OWNER = process.env.GITHUB_OWNER;
 const GITHUB_REPO = process.env.GITHUB_REPO;
@@ -195,4 +195,5 @@ anunciarNuevasNovelas();
 
 // Si quieres que revise cada cierto tiempo, descomenta:
 // setInterval(anunciarNuevasNovelas, 5 * 60 * 1000); // cada 5 minutos
+
 
