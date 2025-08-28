@@ -122,25 +122,10 @@ async function enviarNovelaTelegram(novela) {
   if (novela.pc_traduccion_vip) {
     mensaje += `🌐🔒 [PC Traducción VIP](<${novela.pc_traduccion_vip}>)\n`;
   }
- // Acortar el enlace público usando el método rápido de Cuty.io
- const enlaceOriginal = `https://eroverse.onrender.com/novela.html?id=${novela.id}`;
- let enlaceCuty = enlaceOriginal;
- try {
-   const cutyToken = process.env.CUTY_TOKEN_AMIGO;
-   if (!cutyToken) throw new Error('No se encontró CUTY_TOKEN_AMIGO en el .env');
-   const apiUrl = `https://api.cuty.io/quick?token=${cutyToken}&url=${encodeURIComponent(enlaceOriginal)}`;
-   const cutyRes = await fetch(apiUrl);
-   const cutyJson = await cutyRes.json();
-   if (cutyJson && cutyJson.success && cutyJson.short_url) {
-     enlaceCuty = cutyJson.short_url.trim();
-   } else {
-     console.error('Error acortando enlace con Cuty:', JSON.stringify(cutyJson));
-   }
- } catch (e) {
-   console.error('Error llamando a la API rápida de Cuty:', e?.message || e);
- }
- mensaje += `\n[Ver en Eroverse](${enlaceCuty})`;
-
+// Usar siempre el enlace original
+const enlaceOriginal = `https://eroverse.onrender.com/novela.html?id=${novela.id}`;
+mensaje += `\n[Ver en Eroverse](${enlaceOriginal})`;
+  
   const isValidImage = url => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
   const images = [];
   if (novela.portada && isValidImage(novela.portada)) images.push(novela.portada);
@@ -210,3 +195,4 @@ anunciarNuevasNovelas();
 
 // Si quieres que revise cada cierto tiempo, descomenta:
 // setInterval(anunciarNuevasNovelas, 5 * 60 * 1000); // cada 5 minutos
+
