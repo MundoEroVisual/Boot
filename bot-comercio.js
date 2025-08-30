@@ -69,13 +69,20 @@ async function getShopData() {
     headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' }
   });
   if (res.status === 404) {
-    // Crear archivo base en GitHub
+    // Crear archivo base en GitHub si no existe
     const base = { ...BASE_DATA };
     base.shop = [...BASE_DATA.shop, ...EXTRA_SHOP_ITEMS];
     await saveShopData(base);
     return base;
   }
   const data = await res.json();
+  if (!data.content) {
+    // Si no hay contenido, crear archivo base
+    const base = { ...BASE_DATA };
+    base.shop = [...BASE_DATA.shop, ...EXTRA_SHOP_ITEMS];
+    await saveShopData(base);
+    return base;
+  }
   const content = Buffer.from(data.content, 'base64').toString('utf-8');
   const json = JSON.parse(content);
   // Fusionar artículos extra si faltan
