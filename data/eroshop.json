@@ -1,0 +1,225 @@
+{
+  "users": {},
+  "shop": [
+    {
+      "id": "vip1d",
+      "name": "VIP 1 Día",
+      "price": 50,
+      "emoji": "👑"
+    },
+    {
+      "id": "vip7d",
+      "name": "VIP 2 Días",
+      "price": 100,
+      "emoji": "👑"
+    },
+    {
+      "id": "vip1m",
+      "name": "VIP 3 Días",
+      "price": 150,
+      "emoji": "👑"
+    },
+    {
+      "id": "vip3m",
+      "name": "VIP 7 Días",
+      "price": 400,
+      "emoji": "👑"
+    },
+    {
+      "id": "color",
+      "name": "Color de Nickname",
+      "price": 25,
+      "emoji": "🎨"
+    },
+    {
+      "id": "fondo",
+      "name": "Fondo Personalizado",
+      "price": 40,
+      "emoji": "🖼️"
+    },
+    {
+      "id": "titulo",
+      "name": "Título personal",
+      "price": 45,
+      "emoji": "🧬"
+    },
+    {
+      "id": "sticker",
+      "name": "Sticker personalizado",
+      "price": 90,
+      "emoji": "🖼️"
+    },
+    {
+      "id": "anuncio",
+      "name": "Anuncio personalizado",
+      "price": 80,
+      "emoji": "📢"
+    },
+    {
+      "id": "caja",
+      "name": "Caja Sorpresa",
+      "price": 70,
+      "emoji": "🎁"
+    },
+    {
+      "id": "vip6m",
+      "name": "VIP 10 dias",
+      "price": 600,
+      "emoji": "👑"
+    },
+    {
+      "id": "vip12m",
+      "name": "VIP 1 mes",
+      "price": 3000,
+      "emoji": "👑"
+    },
+    {
+      "id": "caja_premium",
+      "name": "Caja Sorpresa Premium",
+      "price": 200,
+      "emoji": "🎁"
+    },
+    {
+      "id": "emoji_personal",
+      "name": "Emoji Personalizado",
+      "price": 120,
+      "emoji": "😃"
+    },
+    {
+      "id": "rol_personal",
+      "name": "Rol Personalizado",
+      "price": 250,
+      "emoji": "🏷️"
+    }
+  ],
+  "missions": [
+    {
+      "id": "comentar",
+      "name": "Comentar en Video",
+      "desc": "Comenta en un video",
+      "gems": 5,
+      "points": 10,
+      "emoji": "💬"
+    },
+    {
+      "id": "ver",
+      "name": "Ver Video Completo",
+      "desc": "Ver un video completo",
+      "gems": 3,
+      "points": 5,
+      "emoji": "👀"
+    },
+    {
+      "id": "compartir",
+      "name": "Compartir Video",
+      "desc": "Comparte un video",
+      "gems": 10,
+      "points": 15,
+      "emoji": "📤"
+    },
+    {
+      "id": "suscribir",
+      "name": "Suscribirse al Canal",
+      "desc": "Suscríbete al canal",
+      "gems": 20,
+      "points": 25,
+      "emoji": "🔔"
+    },
+    {
+      "id": "creativo",
+      "name": "Comentario Creativo",
+      "desc": "Comentario creativo (10+ palabras)",
+      "gems": 7,
+      "points": 10,
+      "emoji": "✍️"
+    },
+    {
+      "id": "pregunta",
+      "name": "Responder Pregunta",
+      "desc": "Responde una pregunta del video",
+      "gems": 8,
+      "points": 12,
+      "emoji": "🧠"
+    },
+    {
+      "id": "fanart",
+      "name": "Fanart/Miniatura",
+      "desc": "Crea fanart o miniatura",
+      "gems": 30,
+      "points": 40,
+      "emoji": "🎨"
+    },
+    {
+      "id": "easteregg",
+      "name": "Huevo de Pascua",
+      "desc": "Encuentra un huevo de pascua",
+      "gems": 15,
+      "points": 25,
+      "emoji": "🕵️"
+    },
+    {
+      "id": "historia",
+      "name": "Historia/Red Social",
+      "desc": "Sube historia con el video",
+      "gems": 20,
+      "points": 25,
+      "emoji": "📸"
+    },
+    {
+      "id": "etiqueta",
+      "name": "Etiquetar Amigo",
+      "desc": "Etiqueta a un amigo",
+      "gems": 5,
+      "points": 10,
+      "emoji": "👥"
+    },
+    {
+      "id": "encuesta",
+      "name": "Participar en Encuesta",
+      "desc": "Participa en encuesta",
+      "gems": 5,
+      "points": 10,
+      "emoji": "🧪"
+    },
+    {
+      "id": "captura",
+      "name": "Captura en #pruebas",
+      "desc": "Envía captura en #pruebas",
+      "gems": 3,
+      "points": 5,
+      "emoji": "📩"
+    },
+    {
+      "id": "codigo",
+      "name": "Código Secreto",
+      "desc": "Comenta código secreto",
+      "gems": 10,
+      "points": 20,
+      "emoji": "🎁"
+    },
+    {
+      "id": "top",
+      "name": "Top 3 Semana",
+      "desc": "Top 3 más activos",
+      "gems": 0,
+      "points": 50,
+      "emoji": "🔥"
+    },
+    {
+      "id": "semanal",
+      "name": "Misión Semanal",
+      "desc": "Misión sorpresa semanal",
+      "gems": 0,
+      "points": 0,
+      "emoji": "🎯"
+    },
+    {
+      "id": "trivia",
+      "name": "Trivia",
+      "desc": "Responde trivia",
+      "gems": 10,
+      "points": 0,
+      "emoji": "🧠"
+    }
+  ]
+}
