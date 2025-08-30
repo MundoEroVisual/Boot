@@ -1,3 +1,4 @@
+
 import 'dotenv/config'; // esta línea debe ser la primera
 import fs from 'fs';
 import path from 'path';
@@ -5,6 +6,27 @@ import RSSParser from 'rss-parser';
 import { Octokit } from '@octokit/rest';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+
+// Variables de entorno para GitHub y YouTube (debe ir antes de cualquier uso)
+const {
+  DISCORD_TOKEN,
+  DISCORD_CHANNEL_WELCOME,
+  DISCORD_CHANNEL_MEMES,
+  DISCORD_CHANNEL_HENTAI,
+  DISCORD_CHANNEL_PORNOLAND,
+  DISCORD_CHANNEL_FETICHES,
+  DISCORD_CHANNEL_PIES,
+  DISCORD_CHANNEL_JUEGOS_NOPOR,
+  DISCORD_CHANNEL_NEW_VIDEOS,
+  YOUTUBE_CHANNEL_ID,
+  YOUTUBE_API_KEY,
+  GITHUB_TOKEN,
+  GITHUB_OWNER,
+  GITHUB_REPO,
+  GITHUB_BRANCH = "main",
+  DISCORD_ROLE_MIEMBRO,
+  DISCORD_CHANNEL_ACTIVITY_LOG,
+} = process.env;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -55,6 +77,11 @@ const CANAL_VIDEOS_YOUTUBE = process.env.DISCORD_CHANNEL_NEW_VIDEOS || "14006953
 
 // Variables para anuncios de novelas y YouTube
 const NOVELAS_ANUNCIADAS_PATH = "./data/novelasAnunciadas.json";
+// Configuración para guardar las anunciadas en otro repo
+const ANUNCIADAS_GITHUB_OWNER = 'MundoEroVisual';
+const ANUNCIADAS_GITHUB_REPO = 'Bot-de-Discord';
+const ANUNCIADAS_GITHUB_BRANCH = 'main';
+const ANUNCIADAS_JSON_GITHUB_PATH = 'data/anunciadas.json';
 const VIDEOS_ANUNCIADOS_PATH = "./data/videosAnunciados.json";
 let novelasAnunciadas = new Set();
 let videosAnunciados = new Set();
@@ -68,41 +95,46 @@ let verificacionesAutomaticasActivas = true;
 // Carga inicial de novelas anunciadas (si existe)
 (async () => {
   try {
-    console.log("📚 Cargando novelas anunciadas...");
+  // console.log("📚 Cargando novelas anunciadas...");
     
-    // Intentar cargar desde GitHub primero
-    if (isGitHubConfigured()) {
+    // Intentar cargar desde el repo externo siempre
+    try {
+  // console.log("🔍 Intentando cargar desde repo externo...");
+      const octokit = new Octokit({ auth: GITHUB_TOKEN });
+      let novelasAnunciadasData = [];
       try {
-        console.log("🔍 Intentando cargar desde GitHub...");
-        const novelasAnunciadasData = await getJsonFromGitHub('data/novelasAnunciadas.json');
-        console.log("📥 Datos recibidos de GitHub:", novelasAnunciadasData);
-        
-        if (Array.isArray(novelasAnunciadasData)) {
-          novelasAnunciadas = new Set(novelasAnunciadasData);
-          console.log(`✅ Novelas anunciadas cargadas desde GitHub: ${novelasAnunciadas.size} novelas`);
-          console.log(`📋 Primeras 5 novelas anunciadas:`, Array.from(novelasAnunciadas).slice(0, 5));
-          
-          // Verificar si contiene las novelas específicas mencionadas
-          const novelasEspecificas = [
-            'light-and-dark-p1-v0-3-1-1750252857696',
-            'tune-in-to-the-show-d-1750295514660'
-          ];
-          
-          for (const novelaId of novelasEspecificas) {
-            const estaAnunciada = novelasAnunciadas.has(novelaId);
-            console.log(`🔍 Verificación específica - ${novelaId}: ${estaAnunciada ? '✅ ANUNCIADA' : '❌ NO ANUNCIADA'}`);
-          }
-        } else {
-          console.log("⚠️ Datos de GitHub no son un array válido");
-          console.log("📄 Tipo de datos recibidos:", typeof novelasAnunciadasData);
-          console.log("📄 Contenido:", novelasAnunciadasData);
-        }
-      } catch (githubError) {
-        console.log("⚠️ No se pudo cargar novelas desde GitHub:", githubError.message);
-        console.log("🔍 Stack trace completo:", githubError.stack);
+        const { data } = await octokit.repos.getContent({
+          owner: ANUNCIADAS_GITHUB_OWNER,
+          repo: ANUNCIADAS_GITHUB_REPO,
+          path: ANUNCIADAS_JSON_GITHUB_PATH,
+          ref: ANUNCIADAS_GITHUB_BRANCH
+        });
+        const content = Buffer.from(data.content, 'base64').toString('utf-8');
+        novelasAnunciadasData = JSON.parse(content);
+      } catch (e) {
+        // Si no existe el archivo, lo crea vacío
+        await octokit.repos.createOrUpdateFileContents({
+          owner: ANUNCIADAS_GITHUB_OWNER,
+          repo: ANUNCIADAS_GITHUB_REPO,
+          path: ANUNCIADAS_JSON_GITHUB_PATH,
+          message: 'Crear archivo de novelas anunciadas',
+          content: Buffer.from(JSON.stringify([], null, 2)).toString('base64'),
+          branch: ANUNCIADAS_GITHUB_BRANCH
+        });
+        novelasAnunciadasData = [];
       }
-    } else {
-      console.log("⚠️ GitHub no está configurado");
+      if (Array.isArray(novelasAnunciadasData)) {
+        novelasAnunciadas = new Set(novelasAnunciadasData);
+  console.log(`✅ Novelas anunciadas cargadas desde repo externo: ${novelasAnunciadas.size} novelas`);
+  // console.log(`📋 Primeras 5 novelas anunciadas:`, Array.from(novelasAnunciadas).slice(0, 5));
+      } else {
+  console.log("⚠️ Datos del repo externo no son un array válido");
+  // console.log("📄 Tipo de datos recibidos:", typeof novelasAnunciadasData);
+  // console.log("📄 Contenido:", novelasAnunciadasData);
+      }
+    } catch (githubError) {
+  console.log("⚠️ No se pudo cargar novelas desde el repo externo:", githubError.message);
+  // console.log("🔍 Stack trace completo:", githubError.stack);
     }
     
     // Solo usar fallback local si no se pudo cargar desde GitHub o si novelasAnunciadas está vacío
@@ -163,26 +195,6 @@ let verificacionesAutomaticasActivas = true;
     console.log("ℹ️ Empezando con listas vacías");
   }
 })();
-
-// Variables de entorno para GitHub y YouTube
-const {
-  DISCORD_TOKEN,
-  DISCORD_CHANNEL_WELCOME,
-  DISCORD_CHANNEL_MEMES,
-  DISCORD_CHANNEL_HENTAI,
-  DISCORD_CHANNEL_PORNOLAND,
-  DISCORD_CHANNEL_FETICHES,
-  DISCORD_CHANNEL_PIES,
-  DISCORD_CHANNEL_JUEGOS_NOPOR,
-  YOUTUBE_CHANNEL_ID,
-  YOUTUBE_API_KEY,
-  GITHUB_TOKEN,
-  GITHUB_OWNER,
-  GITHUB_REPO,
-  GITHUB_BRANCH = "main",
-  DISCORD_ROLE_MIEMBRO,
-  DISCORD_CHANNEL_ACTIVITY_LOG,
-} = process.env;
 
 // Validación completa de variables críticas - CORREGIDO
 function validateEnvironmentVariables() {
@@ -1899,7 +1911,7 @@ client.on("interactionCreate", async (interaction) => {
     }
     
     try {
-      const novelas = await getJsonFromGitHub('data/novelasAnunciadas.json');
+  const novelas = await getJsonFromGitHub(ANUNCIADAS_JSON_GITHUB_PATH, ANUNCIADAS_GITHUB_OWNER, ANUNCIADAS_GITHUB_REPO, ANUNCIADAS_GITHUB_BRANCH);
       if (!Array.isArray(novelas)) {
         await interaction.reply({ content: "Error al cargar las novelas anunciadas.", flags: [1] });
         return;
@@ -2090,7 +2102,7 @@ client.on("interactionCreate", async (interaction) => {
         return;
       }
       
-      const novelasAnunciadasData = await getJsonFromGitHub('data/novelasAnunciadas.json');
+  const novelasAnunciadasData = await getJsonFromGitHub(ANUNCIADAS_JSON_GITHUB_PATH, ANUNCIADAS_GITHUB_OWNER, ANUNCIADAS_GITHUB_REPO, ANUNCIADAS_GITHUB_BRANCH);
       console.log("📥 Datos recibidos de GitHub:", novelasAnunciadasData);
       
       if (Array.isArray(novelasAnunciadasData)) {
@@ -2131,7 +2143,7 @@ client.on("interactionCreate", async (interaction) => {
         return;
       }
       
-      const novelasAnunciadasData = await getJsonFromGitHub('data/novelasAnunciadas.json');
+  const novelasAnunciadasData = await getJsonFromGitHub(ANUNCIADAS_JSON_GITHUB_PATH, ANUNCIADAS_GITHUB_OWNER, ANUNCIADAS_GITHUB_REPO, ANUNCIADAS_GITHUB_BRANCH);
       console.log("📥 Contenido completo del archivo:", novelasAnunciadasData);
       
       const embed = new EmbedBuilder()
@@ -2212,7 +2224,7 @@ client.on("interactionCreate", async (interaction) => {
         return;
       }
       
-      const novelasAnunciadasData = await getJsonFromGitHub('data/novelasAnunciadas.json');
+  const novelasAnunciadasData = await getJsonFromGitHub(ANUNCIADAS_JSON_GITHUB_PATH, ANUNCIADAS_GITHUB_OWNER, ANUNCIADAS_GITHUB_REPO, ANUNCIADAS_GITHUB_BRANCH);
       const videosAnunciadosData = await getJsonFromGitHub('data/videosAnunciados.json');
       console.log("📥 Contenido de novelas:", novelasAnunciadasData);
       console.log("📥 Contenido de videos:", videosAnunciadosData);
@@ -2252,11 +2264,11 @@ client.on("interactionCreate", async (interaction) => {
       }
       
       // Corregir novelas anunciadas
-      const novelasAnunciadasData = await getJsonFromGitHub('data/novelasAnunciadas.json');
+  const novelasAnunciadasData = await getJsonFromGitHub(ANUNCIADAS_JSON_GITHUB_PATH, ANUNCIADAS_GITHUB_OWNER, ANUNCIADAS_GITHUB_REPO, ANUNCIADAS_GITHUB_BRANCH);
       let novelasOrdenadas = [];
       if (Array.isArray(novelasAnunciadasData)) {
         novelasOrdenadas = novelasAnunciadasData.sort();
-        await updateFileOnGitHub('data/novelasAnunciadas.json', novelasOrdenadas);
+  await updateFileOnGitHub(ANUNCIADAS_JSON_GITHUB_PATH, novelasOrdenadas);
       }
       
       // Corregir videos anunciados
@@ -2541,106 +2553,39 @@ function addXP(userId) {
   return xpGain;
 }
 
-// Función para guardar novelas anunciadas en GitHub
+// Función para guardar novelas anunciadas en el repo externo
 async function guardarNovelasEnGitHub(novelas) {
   try {
-    console.log("💾 Guardando novelas anunciadas...");
+    console.log("💾 Guardando novelas anunciadas en repo externo...");
     console.log(`📊 Total de novelas a guardar: ${novelas.size}`);
-    
-    if (!isGitHubConfigured()) {
-      console.log("⚠️ GitHub no configurado, guardando en archivo local");
-      const NOVELAS_PATH = path.join(__dirname, 'data', 'novelasAnunciadas.json');
-      const dir = path.dirname(NOVELAS_PATH);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      
-      // LEER IDs EXISTENTES Y AGREGAR NUEVOS (NO ELIMINAR)
-      let novelasExistentes = [];
-      if (fs.existsSync(NOVELAS_PATH)) {
-        try {
-          const contenidoExistente = fs.readFileSync(NOVELAS_PATH, "utf-8");
-          novelasExistentes = JSON.parse(contenidoExistente);
-          console.log(`📖 IDs existentes cargados: ${novelasExistentes.length}`);
-        } catch (error) {
-          console.log("⚠️ Error leyendo archivo existente, empezando desde cero");
-          novelasExistentes = [];
-        }
-      }
-      
-      // COMBINAR IDs EXISTENTES CON NUEVOS
-      const todosLosIds = [...new Set([...novelasExistentes, ...Array.from(novelas)])];
-      const novelasOrdenadas = todosLosIds.sort();
-      
-      // GUARDAR EN FORMATO JSON LIMPIO - ASEGURAR FORMATO CORRECTO
-      const jsonData = JSON.stringify(novelasOrdenadas, null, 2);
-      fs.writeFileSync(NOVELAS_PATH, jsonData);
-      console.log(`✅ Novelas guardadas en archivo local (${novelasOrdenadas.length} total, ordenadas)`);
-      console.log("📋 Formato JSON guardado:", jsonData.substring(0, 200) + "...");
-      return { success: true, message: 'Guardado en archivo local' };
-    }
-
-    // LEER IDs EXISTENTES DESDE GITHUB
-    let novelasExistentes = [];
+    const octokit = new Octokit({ auth: GITHUB_TOKEN });
+    let sha = undefined;
     try {
-      const contenidoExistente = await getJsonFromGitHub('data/novelasAnunciadas.json');
-      if (Array.isArray(contenidoExistente)) {
-        novelasExistentes = contenidoExistente;
-        console.log(`📖 IDs existentes cargados desde GitHub: ${novelasExistentes.length}`);
-      }
-    } catch (error) {
-      console.log("⚠️ No se pudieron cargar IDs existentes, empezando desde cero");
-      novelasExistentes = [];
+      // Obtener SHA si el archivo existe en el nuevo repo
+      const { data } = await octokit.repos.getContent({
+        owner: ANUNCIADAS_GITHUB_OWNER,
+        repo: ANUNCIADAS_GITHUB_REPO,
+        path: ANUNCIADAS_JSON_GITHUB_PATH,
+        ref: ANUNCIADAS_GITHUB_BRANCH
+      });
+      sha = data.sha;
+    } catch (e) {
+      // Si no existe, lo creamos
     }
-    
-    // COMBINAR IDs EXISTENTES CON NUEVOS
-    const todosLosIds = [...new Set([...novelasExistentes, ...Array.from(novelas)])];
-    const novelasOrdenadas = todosLosIds.sort();
-    
-    // GUARDAR EN FORMATO JSON LIMPIO - ASEGURAR FORMATO CORRECTO
-    const jsonData = JSON.stringify(novelasOrdenadas, null, 2);
-    console.log("📤 Enviando datos ordenados a GitHub...");
-    console.log(`📋 Total de IDs (${novelasOrdenadas.length}):`, novelasOrdenadas);
-    console.log("📋 Formato JSON a guardar:", jsonData.substring(0, 200) + "...");
-    
-    // USAR updateFileOnGitHub CON EL JSON STRINGIFICADO
-    const result = await updateFileOnGitHub('data/novelasAnunciadas.json', novelasOrdenadas);
-    console.log('✅ Novelas guardadas en GitHub (formato limpio, ordenadas)');
-    return { success: true, message: 'Guardado en GitHub' };
+    await octokit.repos.createOrUpdateFileContents({
+      owner: ANUNCIADAS_GITHUB_OWNER,
+      repo: ANUNCIADAS_GITHUB_REPO,
+      path: ANUNCIADAS_JSON_GITHUB_PATH,
+      message: 'Actualizar novelas anunciadas en Discord',
+      content: Buffer.from(JSON.stringify(Array.from(novelas), null, 2)).toString('base64'),
+      branch: ANUNCIADAS_GITHUB_BRANCH,
+      sha
+    });
+    console.log('✅ Novelas guardadas en el repo externo (formato limpio, ordenadas)');
+    return { success: true, message: 'Guardado en repo externo' };
   } catch (error) {
-    console.error('❌ Error guardando novelas en GitHub:', error);
-    // Fallback a archivo local
-    try {
-      const NOVELAS_PATH = path.join(__dirname, 'data', 'novelasAnunciadas.json');
-      const dir = path.dirname(NOVELAS_PATH);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      
-      // LEER IDs EXISTENTES Y AGREGAR NUEVOS
-      let novelasExistentes = [];
-      if (fs.existsSync(NOVELAS_PATH)) {
-        try {
-          const contenidoExistente = fs.readFileSync(NOVELAS_PATH, "utf-8");
-          novelasExistentes = JSON.parse(contenidoExistente);
-        } catch (error) {
-          novelasExistentes = [];
-        }
-      }
-      
-      // COMBINAR IDs EXISTENTES CON NUEVOS
-      const todosLosIds = [...new Set([...novelasExistentes, ...Array.from(novelas)])];
-      const novelasOrdenadas = todosLosIds.sort();
-      
-      // GUARDAR EN FORMATO JSON LIMPIO
-      const jsonData = JSON.stringify(novelasOrdenadas, null, 2);
-      fs.writeFileSync(NOVELAS_PATH, jsonData);
-      console.log(`✅ Novelas guardadas en archivo local como fallback (${novelasOrdenadas.length} total, ordenadas)`);
-      return { success: true, message: 'Guardado en archivo local como fallback' };
-    } catch (localError) {
-      console.error('❌ Error guardando en archivo local:', localError);
-      return { success: false, error: 'Error guardando datos' };
-    }
+    console.error('❌ Error guardando novelas en el repo externo:', error);
+    return { success: false, error: 'Error guardando datos en repo externo' };
   }
 }
 
@@ -2761,7 +2706,7 @@ async function checkNovelas() {
     if (isGitHubConfigured()) {
       try {
         console.log("🔄 Recargando novelas anunciadas desde GitHub...");
-        const novelasAnunciadasData = await getJsonFromGitHub('data/novelasAnunciadas.json');
+  const novelasAnunciadasData = await getJsonFromGitHub(ANUNCIADAS_JSON_GITHUB_PATH, ANUNCIADAS_GITHUB_OWNER, ANUNCIADAS_GITHUB_REPO, ANUNCIADAS_GITHUB_BRANCH);
         if (Array.isArray(novelasAnunciadasData)) {
           novelasAnunciadas = new Set(novelasAnunciadasData);
           console.log(`✅ Novelas anunciadas recargadas: ${novelasAnunciadas.size} novelas`);
@@ -2821,11 +2766,6 @@ async function checkNovelas() {
       try {
         console.log(`🔍 Verificando novela: ${novela.titulo} (ID: ${novela.id})`);
         console.log(`   - Ya anunciada: ${novelasAnunciadas.has(novela.id)}`);
-        console.log(`   - Tiene portada: ${!!novela.portada}`);
-        console.log(`   - Tiene peso: ${!!novela.peso}`);
-        console.log(`   - Tiene estado: ${!!novela.estado}`);
-        console.log(`   - Tiene géneros: ${!!novela.generos}`);
-        console.log(`   - Tiene enlaces: ${!!(novela.android || novela.pc || novela.android_vip || novela.pc_vip)}`);
         
         if (!novelasAnunciadas.has(novela.id)) {
           console.log(`✅ Anunciando novela nueva: ${novela.titulo}`);
@@ -3376,9 +3316,20 @@ async function getFileSha(githubPath) {
 // Función para actualizar un archivo en GitHub
 async function updateFileOnGitHub(githubPath, data) {
   try {
+    // Si es novelasAnunciadas, usar el repo externo
+    let owner = GITHUB_OWNER;
+    let repo = GITHUB_REPO;
+    let branch = GITHUB_BRANCH;
+    let pathToUse = githubPath;
+    if (githubPath === 'data/novelasAnunciadas.json' || githubPath === './data/novelasAnunciadas.json') {
+      owner = ANUNCIADAS_GITHUB_OWNER;
+      repo = ANUNCIADAS_GITHUB_REPO;
+      branch = ANUNCIADAS_GITHUB_BRANCH;
+      pathToUse = ANUNCIADAS_JSON_GITHUB_PATH;
+    }
     if (!isGitHubConfigured()) {
       console.log('⚠️ GitHub no configurado, guardando en archivo local');
-      const localPath = path.join(__dirname, githubPath);
+      const localPath = path.join(__dirname, pathToUse);
       const dir = path.dirname(localPath);
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
@@ -3392,19 +3343,19 @@ async function updateFileOnGitHub(githubPath, data) {
     });
 
     const content = JSON.stringify(data, null, 2);
-    const sha = await getFileSha(githubPath);
+    const sha = await getFileSha(pathToUse);
 
     await octokit.rest.repos.createOrUpdateFileContents({
-      owner: GITHUB_OWNER,
-      repo: GITHUB_REPO,
-      path: githubPath,
+      owner,
+      repo,
+      path: pathToUse,
       message: 'Actualización automática de datos',
       content: Buffer.from(content).toString('base64'),
       sha: sha,
-      branch: GITHUB_BRANCH,
+      branch,
     });
 
-    console.log(`✅ Archivo ${githubPath} actualizado en GitHub`);
+    console.log(`✅ Archivo ${pathToUse} actualizado en GitHub`);
     return { success: true, message: 'Actualizado en GitHub' };
   } catch (error) {
     console.error(`❌ Error actualizando ${githubPath} en GitHub:`, error);
