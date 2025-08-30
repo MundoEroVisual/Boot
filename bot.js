@@ -45,7 +45,9 @@ const CANAL_ANUNCIOS_ID = process.env.CANAL_ANUNCIOS_ID || "1372061643105898527"
 const CANALES_ANUNCIOS_NOVELAS = [
   "1372063183446999071", // Canal de anuncios de videos de YouTube
   "1396729794325905479",
-  "1409604201704722614"  // Canal adicional
+  "1409604201704722614",
+  "1411195764117344286"
+    // Canal adicional
 ];
 
 // Canal específico para videos de YouTube
