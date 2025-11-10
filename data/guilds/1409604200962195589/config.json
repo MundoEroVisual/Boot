@@ -3,7 +3,7 @@
   "welcomeText": "{user} se ha unido a {server}! 👋",
   "goodbyeChannelId": null,
   "goodbyeText": null,
-  "updatedAt": "2025-11-10T05:37:08.263Z",
+  "updatedAt": "2025-11-10T17:50:55.698Z",
   "welcome": {
     "channelId": "1409604201704722614",
     "message": "{user} se ha unido a {server}! 👋",
