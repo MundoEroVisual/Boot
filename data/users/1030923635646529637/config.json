@@ -3,5 +3,23 @@
   "channels": {},
   "preferences": {},
   "createdAt": "2025-11-10T17:59:29.387Z",
-  "updatedAt": "2025-11-10T17:59:29.923Z"
+  "updatedAt": "2025-11-10T18:00:57.746Z",
+  "1409604200962195589": {
+    "welcome": {
+      "channelId": "1409604201704722614",
+      "message": "{user} se ha unido a {server}! 👋",
+      "embed": {
+        "enabled": true,
+        "color": "5865f2"
+      }
+    },
+    "welcomeChannelId": "1409604201704722614",
+    "welcomeText": "{user} se ha unido a {server}! 👋",
+    "welcomeUseEmbed": true,
+    "welcomeEmbedColor": "5865f2",
+    "welcomeEmbedTitle": null,
+    "welcomeImageUrl": null,
+    "createdAt": "2025-11-10T18:00:57.047Z",
+    "updatedAt": "2025-11-10T18:00:57.047Z"
+  }
 }
