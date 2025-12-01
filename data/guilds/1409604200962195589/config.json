@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-12-01T06:39:34.958Z",
-  "updatedAt": "2025-12-01T06:49:09.892Z",
+  "updatedAt": "2025-12-01T06:49:35.091Z",
   "tickets": [
     {
       "id": "1764570574740-fktj",
@@ -15,9 +15,7 @@
   "antiSpam": true,
   "antiInvites": true,
   "antiLinks": false,
-  "forbiddenWords": [
-    "d"
-  ],
+  "forbiddenWords": [],
   "reactionRoles": [
     {
       "role": "1437545373672538242",
