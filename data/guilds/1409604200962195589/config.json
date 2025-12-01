@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-12-01T06:39:34.958Z",
-  "updatedAt": "2025-12-01T06:39:41.579Z",
+  "updatedAt": "2025-12-01T06:44:10.769Z",
   "tickets": [
     {
       "id": "1764570574740-fktj",
@@ -43,16 +43,17 @@
   "welcomeEmbedTitle": "Bienvenido",
   "welcomeImageUrl": null,
   "goodbye": {
-    "channelId": "1409604201704722614",
+    "channelId": "1409604201704722615",
     "message": "{user} ha abandonado el servidor 👋",
     "embed": {
       "enabled": true,
-      "color": "ff4444"
+      "color": "ff4444",
+      "title": "Hasta Pronto"
     }
   },
-  "goodbyeChannelId": "1409604201704722614",
+  "goodbyeChannelId": "1409604201704722615",
   "goodbyeText": "{user} ha abandonado el servidor 👋",
   "goodbyeUseEmbed": true,
   "goodbyeEmbedColor": "ff4444",
-  "goodbyeEmbedTitle": null
+  "goodbyeEmbedTitle": "Hasta Pronto"
 }
