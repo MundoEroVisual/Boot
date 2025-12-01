@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-12-01T06:39:34.958Z",
-  "updatedAt": "2025-12-01T06:45:19.267Z",
+  "updatedAt": "2025-12-01T06:49:09.892Z",
   "tickets": [
     {
       "id": "1764570574740-fktj",
@@ -63,5 +63,9 @@
   "goodbyeEmbedTitle": "Hasta Pronto",
   "reactionRolesChannelId": "1409604201704722616",
   "reactionRolesMessage": "jkjk",
-  "reactionRolesAutoCreate": true
+  "reactionRolesAutoCreate": true,
+  "helpChannelId": "1409604201704722614",
+  "helpMessage": "¿Necesitas ayuda? Pulsa el botón para abrir un ticket.",
+  "helpButtonLabel": "Abrir Ticket",
+  "helpDetails": ""
 }
