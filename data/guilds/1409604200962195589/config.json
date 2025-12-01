@@ -1,6 +1,6 @@
 {
-  "createdAt": "2025-12-01T06:35:45.162Z",
-  "updatedAt": "2025-12-01T06:35:46.584Z",
+  "createdAt": "2025-12-01T06:38:45.116Z",
+  "updatedAt": "2025-12-01T06:38:48.337Z",
   "tickets": [
     {
       "id": "1764570574740-fktj",
@@ -41,5 +41,18 @@
   "welcomeUseEmbed": true,
   "welcomeEmbedColor": "5865f2",
   "welcomeEmbedTitle": "Bienvenido",
-  "welcomeImageUrl": null
+  "welcomeImageUrl": null,
+  "goodbye": {
+    "channelId": "1409604201704722614",
+    "message": "{user} ha abandonado el servidor 👋",
+    "embed": {
+      "enabled": true,
+      "color": "ff4444"
+    }
+  },
+  "goodbyeChannelId": "1409604201704722614",
+  "goodbyeText": "{user} ha abandonado el servidor 👋",
+  "goodbyeUseEmbed": true,
+  "goodbyeEmbedColor": "ff4444",
+  "goodbyeEmbedTitle": null
 }
