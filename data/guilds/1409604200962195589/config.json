@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-12-01T06:39:34.958Z",
-  "updatedAt": "2025-12-01T06:54:28.901Z",
+  "updatedAt": "2025-12-01T15:34:59.122Z",
   "tickets": [
     {
       "id": "1764570574740-fktj",
@@ -67,5 +67,8 @@
   "helpChannelId": "1409604201704722614",
   "helpMessage": "¿Necesitas ayuda? Pulsa el botón para abrir un ticket.",
   "helpButtonLabel": "Abrir Ticket",
-  "helpDetails": ""
+  "helpDetails": "",
+  "invitesEnabled": true,
+  "invitesLogChannelId": "1409604201704722614",
+  "invitesMessage": "{user} se unió usando la invitación de {inviter} (code: {code})"
 }
