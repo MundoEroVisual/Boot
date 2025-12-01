@@ -1,6 +1,6 @@
 {
-  "createdAt": "2025-12-01T06:13:40.877Z",
-  "updatedAt": "2025-12-01T06:29:39.993Z",
+  "createdAt": "2025-12-01T06:30:05.834Z",
+  "updatedAt": "2025-12-01T06:30:07.106Z",
   "tickets": [
     {
       "id": "1764570574740-fktj",
@@ -11,5 +11,11 @@
       "createdAt": "2025-12-01T06:29:34.740Z",
       "closedAt": "2025-12-01T06:29:39.521Z"
     }
+  ],
+  "antiSpam": true,
+  "antiInvites": true,
+  "antiLinks": false,
+  "forbiddenWords": [
+    "d"
   ]
 }
