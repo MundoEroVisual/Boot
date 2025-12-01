@@ -1,6 +1,6 @@
 {
-  "createdAt": "2025-12-01T06:31:50.210Z",
-  "updatedAt": "2025-12-01T06:31:56.031Z",
+  "createdAt": "2025-12-01T06:35:45.162Z",
+  "updatedAt": "2025-12-01T06:35:46.584Z",
   "tickets": [
     {
       "id": "1764570574740-fktj",
@@ -26,5 +26,20 @@
     "utilities",
     "fun",
     "games"
-  ]
+  ],
+  "welcome": {
+    "channelId": "1409604201704722614",
+    "message": "{user} se ha unido a {server}! 👋",
+    "embed": {
+      "enabled": true,
+      "color": "5865f2",
+      "title": "Bienvenido"
+    }
+  },
+  "welcomeChannelId": "1409604201704722614",
+  "welcomeText": "{user} se ha unido a {server}! 👋",
+  "welcomeUseEmbed": true,
+  "welcomeEmbedColor": "5865f2",
+  "welcomeEmbedTitle": "Bienvenido",
+  "welcomeImageUrl": null
 }
