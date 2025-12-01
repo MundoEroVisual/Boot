@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-12-01T06:39:34.958Z",
-  "updatedAt": "2025-12-01T06:44:25.473Z",
+  "updatedAt": "2025-12-01T06:45:19.267Z",
   "tickets": [
     {
       "id": "1764570574740-fktj",
@@ -18,8 +18,13 @@
   "forbiddenWords": [
     "d"
   ],
-  "reactionRoles": [],
-  "reactionRolesEnabled": true,
+  "reactionRoles": [
+    {
+      "role": "1437545373672538242",
+      "emoji": "😂"
+    }
+  ],
+  "reactionRolesEnabled": false,
   "commandsEnabled": true,
   "commandsCategories": [
     "moderation",
@@ -55,5 +60,8 @@
   "goodbyeText": "{user} ha abandonado el servidor 👋",
   "goodbyeUseEmbed": true,
   "goodbyeEmbedColor": "ff4444",
-  "goodbyeEmbedTitle": "Hasta Pronto"
+  "goodbyeEmbedTitle": "Hasta Pronto",
+  "reactionRolesChannelId": "1409604201704722616",
+  "reactionRolesMessage": "jkjk",
+  "reactionRolesAutoCreate": true
 }
